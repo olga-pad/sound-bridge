@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sound Bridge</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f7f6f2;color:#252525}.app{max-width:900px;margin:auto;padding:22px 16px 40px}.top{display:flex;justify-content:space-between;align-items:center}.brand{font-weight:800;font-size:22px}.parent{border:0;background:white;border-radius:18px;padding:10px 14px;font-size:15px;box-shadow:0 2px 12px #0000000c}.hero{text-align:center;margin:28px 0 20px}.hero h1{font-size:38px;margin:0 0 8px}.hero p{margin:0;color:#6d6d6d;font-size:17px}.progress{display:flex;gap:8px;justify-content:center;margin:20px 0}.dot{width:35px;height:7px;border-radius:10px;background:#ddd}.dot.on{background:#333}.card{background:white;border-radius:28px;padding:22px;box-shadow:0 10px 35px #0000000d}.sound{text-align:center;font-size:76px;font-weight:800;line-height:1;margin:8px}.hint{text-align:center;color:#777;margin-bottom:20px}.langs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lang{border:2px solid #eee;border-radius:22px;padding:18px;text-align:center;min-height:210px}.flag{font-size:25px}.letter{font-size:48px;font-weight:800;margin:5px}.pic{font-size:46px}.word{font-size:20px;font-weight:700}.play{margin-top:10px;border:0;background:#f2f2f2;border-radius:50%;width:42px;height:42px;font-size:19px}.actions{display:flex;gap:12px;margin-top:18px}.actions button{flex:1;border:0;border-radius:18px;padding:15px;font-size:17px;font-weight:700}.know{background:#e8f5e9}.next{background:#222;color:white}.game{margin-top:18px;background:#fff;border-radius:24px;padding:18px}.game h2{margin:0 0 6px;font-size:20px}.game p{margin:0;color:#777}.choices{display:flex;gap:10px;margin-top:14px}.choice{flex:1;border:2px solid #eee;background:white;border-radius:18px;padding:15px;font-size:28px;font-weight:800}.msg{text-align:center;height:26px;margin-top:10px;font-weight:700}.footer{text-align:center;color:#999;margin-top:22px;font-size:13px}@media(max-width:650px){.hero h1{font-size:31px}.langs{grid-template-columns:1fr}.lang{min-height:auto}.sound{font-size:64px}.actions{flex-direction:column}}
+</style>
+</head>
+<body><main class="app">
+<div class="top"><div class="brand">🌉 Sound Bridge</div><button class="parent" onclick="alert('Родительский режим появится в следующей версии')">⚙️ Родителю</button></div>
+<section class="hero"><h1>Один звук — три языка</h1><p>Слушай, смотри и находи знакомые звуки</p></section>
+<div class="progress" id="progress"></div>
+<section class="card">
+<div class="sound" id="mainLetter">M</div><div class="hint">Послушай один и тот же звук в трёх языках</div>
+<div class="langs" id="langs"></div>
+<div class="actions"><button class="know" onclick="known()">✓ Знаю этот звук</button><button class="next" onclick="nextCard()">Следующий →</button></div>
+</section>
+<section class="game"><h2>🎯 Найди звук</h2><p id="question">Где звук /m/?</p><div class="choices" id="choices"></div><div class="msg" id="msg"></div></section>
+<div class="footer">Первая группа: звуки-друзья • RU · EN · FR</div>
+</main>
+<script>
+const cards=[
+{key:'M',sound:'m',langs:[['🇷🇺','М','👩','мама','м'],['🇬🇧','M','🌙','moon','m'],['🇫🇷','M','🏍️','moto','m']]},
+{key:'F',sound:'f',langs:[['🇷🇺','Ф','📷','фото','ф'],['🇬🇧','F','🐟','fish','f'],['🇫🇷','F','🌸','fleur','f']]},
+{key:'S',sound:'s',langs:[['🇷🇺','С','🧃','сок','с'],['🇬🇧','S','☀️','sun','s'],['🇫🇷','S','👜','sac','s']]},
+{key:'N',sound:'n',langs:[['🇷🇺','Н','👃','нос','н'],['🇬🇧','N','👃','nose','n'],['🇫🇷','N','👃','nez','n']]},
+{key:'L',sound:'l',langs:[['🇷🇺','Л','🌙','луна','л'],['🇬🇧','L','🦁','lion','l'],['🇫🇷','L','🌙','lune','l']]}
+];let i=0;let learned=new Set();
+function speak(text,lang){if(!('speechSynthesis'in window))return; speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(text);u.lang=lang;speechSynthesis.speak(u)}
+function render(){let c=cards[i];mainLetter.textContent=c.key;langs.innerHTML=c.langs.map((x,j)=>`<div class="lang"><div class="flag">${x[0]}</div><div class="letter">${x[1]}</div><div class="pic">${x[2]}</div><div class="word">${x[3]}</div><button class="play" onclick="speak('${x[3]}','${['ru-RU','en-GB','fr-FR'][j]}')">🔊</button></div>`).join('');progress.innerHTML=cards.map((_,j)=>`<div class="dot ${j===i?'on':''}"></div>`).join('');question.textContent=`Где звук /${c.sound}/?`;let opts=[c.key,...cards.filter((_,j)=>j!==i).slice(0,2).map(x=>x.key)].sort(()=>Math.random()-.5);choices.innerHTML=opts.map(x=>`<button class="choice" onclick="answer('${x}')">${x}</button>`).join('');msg.textContent=''}
+function nextCard(){i=(i+1)%cards.length;render()}function known(){learned.add(cards[i].key);msg.textContent='⭐ Отлично!';setTimeout(nextCard,500)}function answer(x){msg.textContent=x===cards[i].key?'✨ Правильно!':'Попробуй ещё 🙂'}render();
+</script></body></html>
